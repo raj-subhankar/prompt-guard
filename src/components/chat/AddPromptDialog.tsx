@@ -1,172 +1,163 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus } from 'lucide-react';
+"use client";
 
-// Fixed tags reference error
+import type React from "react";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus } from "lucide-react";
 
 interface AddPromptDialogProps {
   categories: string[];
   onAddPrompt: (title: string, content: string, category: string) => void;
   disabled?: boolean;
   defaultCategory?: string;
+  trigger?: React.ReactNode;
 }
 
-export function AddPromptDialog({ categories, onAddPrompt, disabled, defaultCategory }: AddPromptDialogProps) {
+export function AddPromptDialog({
+  categories,
+  onAddPrompt,
+  disabled,
+  defaultCategory,
+  trigger,
+}: AddPromptDialogProps) {
   const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [category, setCategory] = useState(defaultCategory || '');
-  const [newCategory, setNewCategory] = useState('');
-  const [useNewCategory, setUseNewCategory] = useState(false);
-
-  // If there's only one category (defaultCategory), pre-select it and hide category selection
-  const isFixedCategory = categories.length === 1 && defaultCategory;
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [category, setCategory] = useState(defaultCategory || "");
+  const [newCategory, setNewCategory] = useState("");
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!title.trim() || !content.trim()) return;
-    
-    const finalCategory = useNewCategory ? newCategory.trim() : category;
+
+    const finalCategory = isCreatingCategory ? newCategory.trim() : category;
     if (!finalCategory) return;
-    
+
     onAddPrompt(title.trim(), content.trim(), finalCategory);
-    
-    // Reset form
-    setTitle('');
-    setContent('');
-    if (!isFixedCategory) {
-      setCategory(defaultCategory || '');
-    }
-    setNewCategory('');
-    setUseNewCategory(false);
+
+    setTitle("");
+    setContent("");
+    setCategory(defaultCategory || "");
+    setNewCategory("");
+    setIsCreatingCategory(false);
     setOpen(false);
   };
 
+  const defaultTrigger = (
+    <Button variant="outline" size="sm" disabled={disabled}>
+      <Plus className="h-4 w-4" />
+    </Button>
+  );
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" disabled={disabled} className="w-full">
-          <Plus className="h-4 w-4 mr-2" />
-          Add New Prompt
-        </Button>
-      </DialogTrigger>
-      
-      <DialogContent className="max-w-md">
+      <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Add New Prompt</DialogTitle>
         </DialogHeader>
-        
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter prompt title"
+              placeholder="Enter prompt title..."
               required
             />
           </div>
-          
-          <div>
+
+          <div className="space-y-2">
             <Label htmlFor="content">Content</Label>
             <Textarea
               id="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Enter the prompt content"
-              className="min-h-20"
+              placeholder="Enter prompt content..."
+              className="min-h-[120px]"
               required
             />
           </div>
-          
-          {!isFixedCategory && (
-            <div>
-              <Label>Category</Label>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    id="existing-category"
-                    name="category-type"
-                    checked={!useNewCategory}
-                    onChange={() => setUseNewCategory(false)}
-                  />
-                  <Label htmlFor="existing-category" className="text-sm font-normal">
-                    Use existing category
-                  </Label>
-                </div>
-                
-                {!useNewCategory && (
-                  <Select value={category} onValueChange={setCategory} required={!useNewCategory}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
+
+          <div className="space-y-2">
+            <Label>Category</Label>
+            <div className="flex gap-2">
+              {!isCreatingCategory ? (
+                <>
+                  <Select value={category} onValueChange={setCategory} required>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Select category..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map(cat => (
+                      {categories.map((cat) => (
                         <SelectItem key={cat} value={cat}>
                           {cat}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                )}
-                
-                <div className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    id="new-category"
-                    name="category-type"
-                    checked={useNewCategory}
-                    onChange={() => setUseNewCategory(true)}
-                  />
-                  <Label htmlFor="new-category" className="text-sm font-normal">
-                    Create new category
-                  </Label>
-                </div>
-                
-                {useNewCategory && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsCreatingCategory(true)}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </>
+              ) : (
+                <>
                   <Input
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
-                    placeholder="Enter new category name"
-                    required={useNewCategory}
+                    placeholder="New category name..."
+                    className="flex-1"
+                    required
                   />
-                )}
-              </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsCreatingCategory(false);
+                      setNewCategory("");
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </>
+              )}
             </div>
-          )}
+          </div>
 
-          {isFixedCategory && (
-            <div>
-              <Label>Category</Label>
-              <div className="p-2 bg-muted rounded-md text-sm">
-                Adding to: <strong>{defaultCategory}</strong>
-              </div>
-            </div>
-          )}
-          <div className="flex gap-2 pt-4">
+          <div className="flex justify-end gap-2 pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
-              className="flex-1"
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              className="flex-1"
-              disabled={!title.trim() || !content.trim() || (!isFixedCategory && !category && !newCategory.trim())}
-            >
-              Add Prompt
-            </Button>
+            <Button type="submit">Add Prompt</Button>
           </div>
         </form>
       </DialogContent>

@@ -5,7 +5,6 @@ import { ChatInput } from "./chat/ChatInput";
 import { AI_MODELS } from "./chat/ModelSelector";
 import { AIService, type ChatMessage } from "@/services/aiService";
 import { ScrollArea } from "./ui/scroll-area";
-import { Sparkles, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ChatHeader } from "./chat/ChatHeader";
 import { ChatSidebar } from "./chat/ChatSidebar";
@@ -43,7 +42,6 @@ export function ChatApp() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Memoized computed values
   const hasApiKeys = useMemo(
     () =>
       Object.keys(apiKeys).length > 0 &&
@@ -133,11 +131,7 @@ export function ChatApp() {
 
   const clearChat = useCallback(() => {
     setMessages([]);
-    toast({
-      title: "Chat Cleared",
-      description: "All messages have been removed.",
-    });
-  }, [toast]);
+  }, []);
 
   const handleSelectPrompt = useCallback((content: string) => {
     setSelectedPrompt(content);
@@ -210,7 +204,6 @@ export function ChatApp() {
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-background via-background to-muted/20 overflow-hidden">
-      {/* Header */}
       <ChatHeader
         onClearChat={clearChat}
         messagesCount={messages.length}
@@ -223,7 +216,6 @@ export function ChatApp() {
       />
 
       <div className="flex flex-1 pt-16">
-        {/* Sidebar */}
         <ChatSidebar
           collapsed={sidebarCollapsed}
           onSelectPrompt={handleSelectPrompt}
@@ -234,9 +226,7 @@ export function ChatApp() {
           hasApiKeys={hasApiKeys}
         />
 
-        {/* Main Chat Area */}
         <div className="flex-1 flex flex-col min-w-0 relative">
-          {/* Chat Messages */}
           <div className="flex-1 overflow-hidden">
             <ScrollArea className="h-full" ref={scrollAreaRef}>
               <div className="max-w-4xl mx-auto px-4 py-8">
@@ -256,30 +246,14 @@ export function ChatApp() {
             </ScrollArea>
           </div>
 
-          {/* Chat Input */}
           <div className="border-t border-border/50 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 p-4">
             <div className="max-w-4xl mx-auto space-y-3">
-              {currentModel && !canUseModel && (
-                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                  <Zap className="h-4 w-4" />
-                  Add your {currentModel.provider} API key to use{" "}
-                  {currentModel.name}
-                </div>
-              )}
-
               <ChatInput
                 onSendMessage={handleSendMessage}
                 isLoading={isLoading}
                 disabled={!canUseModel}
                 initialValue={selectedPrompt}
               />
-
-              {canUseModel && (
-                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                  <Sparkles className="h-3 w-3" />
-                  Powered by {currentModel?.name}
-                </div>
-              )}
             </div>
           </div>
         </div>

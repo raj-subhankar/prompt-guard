@@ -39,19 +39,18 @@ export function ChatMessages({
 
       {isLoading && (
         <div className="animate-in fade-in-0 slide-in-from-bottom-4 duration-300">
-          <TypingIndicator model={currentModel?.name} />
-          {streamingMessage && (
-            <div className="mt-4">
-              <ChatMessageComponent
-                message={{
-                  id: "streaming",
-                  content: streamingMessage,
-                  role: "assistant",
-                  timestamp: new Date(),
-                  model: currentModel?.name,
-                }}
-              />
-            </div>
+          {streamingMessage ? (
+            <ChatMessageComponent
+              message={{
+                id: "streaming",
+                content: streamingMessage,
+                role: "assistant",
+                timestamp: new Date(),
+                model: currentModel?.name,
+              }}
+            />
+          ) : (
+            <TypingIndicator model={currentModel?.name} />
           )}
         </div>
       )}

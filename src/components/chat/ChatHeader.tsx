@@ -13,6 +13,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { MessageSquare, Settings, Plus, Menu, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import tetrateIcon from "../../../public/tetrate-logo-orange.svg";
+import { useState } from "react";
 
 interface ApiKeys {
   openai?: string;
@@ -40,6 +43,8 @@ export function ChatHeader({
   sidebarCollapsed,
   onToggleSidebar,
 }: ChatHeaderProps) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   return (
     <div className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
       <div className="flex items-center justify-between p-4">
@@ -59,18 +64,17 @@ export function ChatHeader({
 
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/20">
-                <MessageSquare className="h-5 w-5 text-primary" />
+              <div className="p-2">
+                <Link to="/">
+                  <img
+                    src={tetrateIcon}
+                    alt="Tetrate logo"
+                    className="h-5 w-5"
+                  />
+                </Link>
               </div>
               <div>
-                <h1 className="font-bold text-lg bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                  Prompt Guard
-                </h1>
-                {messagesCount > 0 && (
-                  <Badge variant="secondary" className="text-xs">
-                    {messagesCount} messages
-                  </Badge>
-                )}
+                <h1 className="font-bold text-lg bg-clip-text">Prompt Guard</h1>
               </div>
             </div>
 
@@ -100,7 +104,7 @@ export function ChatHeader({
 
           <ThemeToggle />
 
-          <Dialog>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
                 <Settings className="h-4 w-4 mr-2" />
@@ -109,11 +113,12 @@ export function ChatHeader({
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>Manage API Keys</DialogTitle>
+                <DialogTitle>API Configuration</DialogTitle>
               </DialogHeader>
               <ApiKeyManager
                 apiKeys={apiKeys}
                 onApiKeysChange={onApiKeysChange}
+                onClose={() => setIsDialogOpen(false)}
               />
             </DialogContent>
           </Dialog>
