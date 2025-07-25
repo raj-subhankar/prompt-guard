@@ -524,16 +524,6 @@ export function PromptLibrary({
                           </li>
                         </ul>
                       </div>
-                      <div>
-                        <p className="font-medium">Import tip:</p>
-                        <p className="ml-4">
-                          Hold{" "}
-                          <kbd className="px-1 py-0.5 bg-muted rounded text-xs">
-                            Shift
-                          </kbd>{" "}
-                          while importing to replace entire library
-                        </p>
-                      </div>
                     </div>
                   </div>
                 </DialogContent>
