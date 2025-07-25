@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Square } from "lucide-react";
+import { Loader2, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ChatInputProps {
@@ -84,7 +84,7 @@ export const ChatInput = React.memo<ChatInputProps>(
           aria-label={isLoading ? "Stop generating" : "Send message"}
         >
           {isLoading ? (
-            <Square className="h-4 w-4" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <Send className="h-4 w-4" />
           )}
