@@ -77,7 +77,7 @@ export const ChatInput = React.memo<ChatInputProps>(
           disabled={!message.trim() || disabled}
           size="sm"
           className={cn(
-            "h-11 px-3 bg-gradient-primary hover:opacity-90 transition-smooth",
+            "h-11 px-3",
             isLoading && "bg-destructive hover:bg-destructive"
           )}
           onClick={isLoading ? onStop : undefined}

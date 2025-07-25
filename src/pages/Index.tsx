@@ -1,5 +1,5 @@
+import { ChatApp } from "@/components/chat/ChatApp";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { ChatApp } from "@/components/ChatApp";
 
 const Index = () => {
   return (

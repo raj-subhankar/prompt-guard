@@ -1,17 +1,4 @@
-import { AIModel } from '@/components/chat/ModelSelector';
-
-export interface ChatMessage {
-  id: string;
-  content: string;
-  role: 'user' | 'assistant';
-  timestamp: Date;
-  model?: string;
-}
-
-interface ApiKeys {
-  openai?: string;
-  anthropic?: string;
-}
+import { AIModel, ApiKeys, ChatMessage } from "@/types";
 
 export class AIService {
   private apiKeys: ApiKeys;
@@ -27,9 +14,9 @@ export class AIService {
   ): Promise<string> {
     const provider = model.provider;
 
-    if (provider === 'openai') {
+    if (provider === "openai") {
       return this.sendOpenAIMessage(messages, model, onStream);
-    } else if (provider === 'anthropic') {
+    } else if (provider === "anthropic") {
       return this.sendAnthropicMessage(messages, model, onStream);
     }
 
@@ -42,19 +29,19 @@ export class AIService {
     onStream?: (chunk: string) => void
   ): Promise<string> {
     if (!this.apiKeys.openai) {
-      throw new Error('OpenAI API key not provided');
+      throw new Error("OpenAI API key not provided");
     }
 
-    const formattedMessages = messages.map(msg => ({
+    const formattedMessages = messages.map((msg) => ({
       role: msg.role,
-      content: msg.content
+      content: msg.content,
     }));
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${this.apiKeys.openai}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.apiKeys.openai}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         model: model.id,
@@ -67,22 +54,27 @@ export class AIService {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw new Error(error.error?.message || `OpenAI API error: ${response.status}`);
+      throw new Error(
+        error.error?.message || `OpenAI API error: ${response.status}`
+      );
     }
 
     if (onStream) {
       return this.handleOpenAIStream(response, onStream);
     } else {
       const data = await response.json();
-      return data.choices[0]?.message?.content || '';
+      return data.choices[0]?.message?.content || "";
     }
   }
 
-  private async handleOpenAIStream(response: Response, onStream: (chunk: string) => void): Promise<string> {
+  private async handleOpenAIStream(
+    response: Response,
+    onStream: (chunk: string) => void
+  ): Promise<string> {
     const reader = response.body?.getReader();
-    if (!reader) throw new Error('No response body');
+    if (!reader) throw new Error("No response body");
 
-    let fullResponse = '';
+    let fullResponse = "";
     const decoder = new TextDecoder();
 
     try {
@@ -91,16 +83,16 @@ export class AIService {
         if (done) break;
 
         const chunk = decoder.decode(value);
-        const lines = chunk.split('\n').filter(line => line.trim() !== '');
+        const lines = chunk.split("\n").filter((line) => line.trim() !== "");
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
+          if (line.startsWith("data: ")) {
             const data = line.slice(6);
-            if (data === '[DONE]') return fullResponse;
+            if (data === "[DONE]") return fullResponse;
 
             try {
               const parsed = JSON.parse(data);
-              const content = parsed.choices[0]?.delta?.content || '';
+              const content = parsed.choices[0]?.delta?.content || "";
               if (content) {
                 fullResponse += content;
                 onStream(content);
@@ -124,21 +116,21 @@ export class AIService {
     onStream?: (chunk: string) => void
   ): Promise<string> {
     if (!this.apiKeys.anthropic) {
-      throw new Error('Anthropic API key not provided');
+      throw new Error("Anthropic API key not provided");
     }
 
     // Convert messages format for Anthropic
-    const formattedMessages = messages.map(msg => ({
+    const formattedMessages = messages.map((msg) => ({
       role: msg.role,
-      content: msg.content
+      content: msg.content,
     }));
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${this.apiKeys.anthropic}`,
-        'Content-Type': 'application/json',
-        'anthropic-version': '2023-06-01',
+        Authorization: `Bearer ${this.apiKeys.anthropic}`,
+        "Content-Type": "application/json",
+        "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
         model: model.id,
@@ -150,22 +142,27 @@ export class AIService {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw new Error(error.error?.message || `Anthropic API error: ${response.status}`);
+      throw new Error(
+        error.error?.message || `Anthropic API error: ${response.status}`
+      );
     }
 
     if (onStream) {
       return this.handleAnthropicStream(response, onStream);
     } else {
       const data = await response.json();
-      return data.content[0]?.text || '';
+      return data.content[0]?.text || "";
     }
   }
 
-  private async handleAnthropicStream(response: Response, onStream: (chunk: string) => void): Promise<string> {
+  private async handleAnthropicStream(
+    response: Response,
+    onStream: (chunk: string) => void
+  ): Promise<string> {
     const reader = response.body?.getReader();
-    if (!reader) throw new Error('No response body');
+    if (!reader) throw new Error("No response body");
 
-    let fullResponse = '';
+    let fullResponse = "";
     const decoder = new TextDecoder();
 
     try {
@@ -174,17 +171,17 @@ export class AIService {
         if (done) break;
 
         const chunk = decoder.decode(value);
-        const lines = chunk.split('\n').filter(line => line.trim() !== '');
+        const lines = chunk.split("\n").filter((line) => line.trim() !== "");
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
+          if (line.startsWith("data: ")) {
             const data = line.slice(6);
-            if (data === '[DONE]') return fullResponse;
+            if (data === "[DONE]") return fullResponse;
 
             try {
               const parsed = JSON.parse(data);
-              if (parsed.type === 'content_block_delta') {
-                const content = parsed.delta?.text || '';
+              if (parsed.type === "content_block_delta") {
+                const content = parsed.delta?.text || "";
                 if (content) {
                   fullResponse += content;
                   onStream(content);

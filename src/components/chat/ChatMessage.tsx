@@ -3,17 +3,10 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { SaveMessageDialog } from "./SaveMessageDialog";
 import { Bot, User } from "lucide-react";
-
-interface Message {
-  id: string;
-  content: string;
-  role: "user" | "assistant";
-  timestamp: Date;
-  model?: string;
-}
+import { ChatMessage as ChatMessageType } from "@/types";
 
 interface ChatMessageProps {
-  message: Message;
+  message: ChatMessageType;
   onSaveToLibrary?: (title: string, content: string, category: string) => void;
   categories?: string[];
 }
@@ -25,7 +18,7 @@ export const ChatMessage = React.memo<ChatMessageProps>(
     return (
       <div
         className={cn(
-          "group flex gap-3 mb-6 relative", // Added relative positioning to the main container
+          "group flex gap-3 mb-6 relative",
           isUser ? "flex-row-reverse" : "flex-row"
         )}
       >

@@ -1,13 +1,11 @@
-// Message related types
 export interface ChatMessage {
   id: string;
   content: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   timestamp: Date;
   model?: string;
 }
 
-// Prompt library types
 export interface Prompt {
   id: string;
   title: string;
@@ -15,7 +13,6 @@ export interface Prompt {
   category: string;
 }
 
-// API related types
 export interface ApiKeys {
   openai?: string;
   anthropic?: string;
@@ -24,11 +21,10 @@ export interface ApiKeys {
 export interface AIModel {
   id: string;
   name: string;
-  provider: 'openai' | 'anthropic' | 'google' | 'cohere';
+  provider: "openai" | "anthropic" | "google" | "cohere";
   description?: string;
 }
 
-// Component prop types
 export interface MessageProps {
   message: ChatMessage;
   onSaveToLibrary?: (title: string, content: string, category: string) => void;

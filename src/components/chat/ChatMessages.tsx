@@ -1,12 +1,12 @@
+import { AIModel, ChatMessage } from "@/types";
 import { ChatMessage as ChatMessageComponent } from "./ChatMessage";
 import { TypingIndicator } from "./TypingIndicator";
-import type { ChatMessage } from "@/services/aiService";
 
 interface ChatMessagesProps {
   messages: ChatMessage[];
   isLoading: boolean;
   streamingMessage: string;
-  currentModel: any;
+  currentModel: AIModel;
   onSaveToLibrary: (title: string, content: string, category: string) => void;
   categories: string[];
 }

@@ -1,10 +1,7 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { ModelSelector } from "./ModelSelector";
-import { ApiKeyManager } from "./ApiKeyManager";
+import { ModelSelector } from "../ModelSelector";
+import { ApiKeyManager } from "../ApiKeyManager";
 import {
   Dialog,
   DialogContent,
@@ -12,21 +9,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { MessageSquare, Settings, Plus, Menu, X } from "lucide-react";
+import { Settings, Plus, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import tetrateIcon from "../../../public/tetrate-logo-orange.svg";
 import { useState } from "react";
-
-interface ApiKeys {
-  openai?: string;
-  anthropic?: string;
-}
+import { AIModel, ApiKeys } from "@/types";
 
 interface ChatHeaderProps {
   onClearChat: () => void;
   messagesCount: number;
-  selectedModel: string;
-  onModelChange: (model: string) => void;
+  selectedModel: AIModel;
+  onModelChange: (model: AIModel) => void;
   apiKeys: ApiKeys;
   onApiKeysChange: (keys: ApiKeys) => void;
   sidebarCollapsed: boolean;

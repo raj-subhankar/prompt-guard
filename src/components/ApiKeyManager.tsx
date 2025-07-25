@@ -1,14 +1,9 @@
-"use client";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Key } from "lucide-react";
-
-interface ApiKeys {
-  openai?: string;
-}
+import { ApiKeys } from "@/types";
 
 interface ApiKeyManagerProps {
   apiKeys: ApiKeys;
