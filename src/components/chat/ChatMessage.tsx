@@ -1,9 +1,10 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { SaveMessageDialog } from "./SaveMessageDialog";
-import { Bot, User } from "lucide-react";
+import { Bookmark, Bot, User } from "lucide-react";
 import { ChatMessage as ChatMessageType } from "@/types";
+import { Button } from "../ui/button";
+import { AddPromptDialog } from "../prompt-library/AddPromptDialog";
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -62,10 +63,15 @@ export const ChatMessage = React.memo<ChatMessageProps>(
                 isUser ? "-left-12" : "-right-12"
               )}
             >
-              <SaveMessageDialog
-                content={message.content}
+              <AddPromptDialog
+                initialContent={message.content}
                 categories={categories}
-                onSave={onSaveToLibrary}
+                onAddPrompt={onSaveToLibrary}
+                trigger={
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Bookmark className="h-4 w-4" />
+                  </Button>
+                }
               />
             </div>
           )}

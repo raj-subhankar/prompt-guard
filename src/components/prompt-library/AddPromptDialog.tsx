@@ -27,6 +27,7 @@ interface AddPromptDialogProps {
   disabled?: boolean;
   defaultCategory?: string;
   trigger?: React.ReactNode;
+  initialContent?: string;
 }
 
 export function AddPromptDialog({
@@ -35,10 +36,17 @@ export function AddPromptDialog({
   disabled,
   defaultCategory,
   trigger,
+  initialContent,
 }: AddPromptDialogProps) {
   const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [title, setTitle] = useState(
+    initialContent
+      ? initialContent.length > 50
+        ? initialContent.substring(0, 50).trim() + "..."
+        : initialContent
+      : ""
+  );
+  const [content, setContent] = useState(initialContent || "");
   const [category, setCategory] = useState(defaultCategory || "");
   const [newCategory, setNewCategory] = useState("");
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
@@ -72,7 +80,9 @@ export function AddPromptDialog({
       <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Add New Prompt</DialogTitle>
+          <DialogTitle>
+            {initialContent ? "Save Prompt" : "Add New Prompt"}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -155,7 +165,9 @@ export function AddPromptDialog({
             >
               Cancel
             </Button>
-            <Button type="submit">Add Prompt</Button>
+            <Button type="submit">
+              {initialContent ? "Save Prompt" : "Add Prompt"}
+            </Button>
           </div>
         </form>
       </DialogContent>

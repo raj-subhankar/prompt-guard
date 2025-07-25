@@ -31,7 +31,7 @@ export function ChatApp() {
     currentModel: selectedModel,
   });
 
-  const { categories, saveContentAsPrompt } = usePromptLibrary({
+  const { categories, addNewPrompt } = usePromptLibrary({
     handleSendMessage,
   });
 
@@ -73,7 +73,7 @@ export function ChatApp() {
                   isLoading={isLoading}
                   streamingMessage={streamingMessage}
                   currentModel={selectedModel}
-                  onSaveToLibrary={saveContentAsPrompt}
+                  onSaveToLibrary={addNewPrompt}
                   categories={categories}
                 />
               )}
