@@ -37,33 +37,87 @@ export class AIService {
       content: msg.content,
     }));
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.apiKeys.openai}`,
-        "Content-Type": "application/json",
+    const url = "/api/opsInterface";
+
+    const requestHeaders = {
+      "Content-Type": "application/json",
+    };
+
+    const openAIRequestPayload = {
+      model: model.id,
+      messages: formattedMessages,
+      stream: !!onStream,
+      temperature: 0.7,
+      max_tokens: 2000,
+    };
+
+    const requestBody = {
+      operation: "forward_ai_request",
+      payload: {
+        destination: "https://api.openai.com/v1/chat/completions",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.apiKeys.openai}`,
+          "module-id": "SETTLEMENT",
+          OpsInterfaceOriginalURL:
+            "https://agentops-dev-648180604668.us-central1.run.app/opsInterface",
+        },
+        payload: openAIRequestPayload,
       },
-      body: JSON.stringify({
-        model: model.id,
-        messages: formattedMessages,
-        stream: !!onStream,
-        temperature: 0.7,
-        max_tokens: 2000,
-      }),
-    });
+    };
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(
-        error.error?.message || `OpenAI API error: ${response.status}`
-      );
-    }
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: requestHeaders,
+        body: JSON.stringify(requestBody),
+      });
 
-    if (onStream) {
-      return this.handleOpenAIStream(response, onStream);
-    } else {
-      const data = await response.json();
-      return data.choices[0]?.message?.content || "";
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("error", {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText,
+        });
+
+        if (response.status === 405) {
+          throw new Error(
+            "Method not allowed - server may not handle OPTIONS preflight requests properly"
+          );
+        }
+
+        let error;
+        try {
+          error = JSON.parse(errorText);
+        } catch (e) {
+          error = {
+            error: {
+              message: `Relay API error: ${response.status} - ${errorText}`,
+            },
+          };
+        }
+        throw new Error(
+          error.error?.message || `Relay API error: ${response.status}`
+        );
+      }
+
+      if (onStream) {
+        return this.handleOpenAIStream(response, onStream);
+      } else {
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || data.content || "";
+      }
+    } catch (error) {
+      console.error("Fetch failed", error);
+
+      if (error instanceof TypeError && error.message === "Failed to fetch") {
+        throw new Error(
+          "CORS error: Cannot connect to relay server from browser. This works with curl but is blocked by browser CORS policy. You need to add CORS headers to your server or use a proxy."
+        );
+      }
+
+      throw error;
     }
   }
 
@@ -72,7 +126,10 @@ export class AIService {
     onStream: (chunk: string) => void
   ): Promise<string> {
     const reader = response.body?.getReader();
-    if (!reader) throw new Error("No response body");
+    if (!reader) {
+      console.error("No response body");
+      throw new Error("No response body");
+    }
 
     let fullResponse = "";
     const decoder = new TextDecoder();
@@ -80,7 +137,9 @@ export class AIService {
     try {
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          break;
+        }
 
         const chunk = decoder.decode(value);
         const lines = chunk.split("\n").filter((line) => line.trim() !== "");
@@ -88,7 +147,9 @@ export class AIService {
         for (const line of lines) {
           if (line.startsWith("data: ")) {
             const data = line.slice(6);
-            if (data === "[DONE]") return fullResponse;
+            if (data === "[DONE]") {
+              return fullResponse;
+            }
 
             try {
               const parsed = JSON.parse(data);
@@ -98,11 +159,13 @@ export class AIService {
                 onStream(content);
               }
             } catch (e) {
-              // Ignore parsing errors for malformed chunks
+              console.warn("Failed to parse", data, e);
             }
           }
         }
       }
+    } catch (error) {
+      console.error("Error reading stream:", error);
     } finally {
       reader.releaseLock();
     }
