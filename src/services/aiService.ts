@@ -37,13 +37,9 @@ export class AIService {
       content: msg.content,
     }));
 
-    const url = "/api/opsInterface";
+    const url = "/api/openai";
 
-    const requestHeaders = {
-      "Content-Type": "application/json",
-    };
-
-    const openAIRequestPayload = {
+    const openAIPayload = {
       model: model.id,
       messages: formattedMessages,
       stream: !!onStream,
@@ -52,40 +48,26 @@ export class AIService {
     };
 
     const requestBody = {
-      operation: "forward_ai_request",
-      payload: {
-        destination: "https://api.openai.com/v1/chat/completions",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.apiKeys.openai}`,
-          "module-id": "SETTLEMENT",
-          OpsInterfaceOriginalURL:
-            "https://agentops-dev-648180604668.us-central1.run.app/opsInterface",
-        },
-        payload: openAIRequestPayload,
-      },
+      provider: "openai",
+      payload: openAIPayload,
+      apiKey: this.apiKeys.openai,
     };
 
     try {
       const response = await fetch(url, {
         method: "POST",
-        headers: requestHeaders,
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("error", {
+        console.error("OpenAI API error", {
           status: response.status,
-          statusText: response.statusText,
           body: errorText,
         });
-
-        if (response.status === 405) {
-          throw new Error(
-            "Method not allowed - server may not handle OPTIONS preflight requests properly"
-          );
-        }
 
         let error;
         try {
@@ -93,12 +75,12 @@ export class AIService {
         } catch (e) {
           error = {
             error: {
-              message: `Relay API error: ${response.status} - ${errorText}`,
+              message: `OpenAI API error: ${response.status} - ${errorText}`,
             },
           };
         }
         throw new Error(
-          error.error?.message || `Relay API error: ${response.status}`
+          error.error?.message || `OpenAI API error: ${response.status}`
         );
       }
 
@@ -106,17 +88,10 @@ export class AIService {
         return this.handleOpenAIStream(response, onStream);
       } else {
         const data = await response.json();
-        return data.choices?.[0]?.message?.content || data.content || "";
+        return data.choices?.[0]?.message?.content || "";
       }
     } catch (error) {
-      console.error("Fetch failed", error);
-
-      if (error instanceof TypeError && error.message === "Failed to fetch") {
-        throw new Error(
-          "CORS error: Cannot connect to relay server from browser. This works with curl but is blocked by browser CORS policy. You need to add CORS headers to your server or use a proxy."
-        );
-      }
-
+      console.error("OpenAI fetch failed", error);
       throw error;
     }
   }
@@ -182,39 +157,62 @@ export class AIService {
       throw new Error("Anthropic API key not provided");
     }
 
-    // Convert messages format for Anthropic
     const formattedMessages = messages.map((msg) => ({
       role: msg.role,
       content: msg.content,
     }));
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.apiKeys.anthropic}`,
-        "Content-Type": "application/json",
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: model.id,
-        messages: formattedMessages,
-        max_tokens: 2000,
-        stream: !!onStream,
-      }),
-    });
+    const url = "/api/openai";
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(
-        error.error?.message || `Anthropic API error: ${response.status}`
-      );
-    }
+    const anthropicPayload = {
+      model: model.id,
+      messages: formattedMessages,
+      max_tokens: 2000,
+      stream: !!onStream,
+    };
 
-    if (onStream) {
-      return this.handleAnthropicStream(response, onStream);
-    } else {
-      const data = await response.json();
-      return data.content[0]?.text || "";
+    const requestBody = {
+      provider: "anthropic",
+      payload: anthropicPayload,
+      apiKey: this.apiKeys.anthropic,
+    };
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let error;
+        try {
+          error = JSON.parse(errorText);
+        } catch (e) {
+          error = {
+            error: {
+              message: `Anthropic API error: ${response.status} - ${errorText}`,
+            },
+          };
+        }
+        throw new Error(
+          error.error?.message || `Anthropic API error: ${response.status}`
+        );
+      }
+
+      if (onStream) {
+        return this.handleAnthropicStream(response, onStream);
+      } else {
+        const data = await response.json();
+        // Standard Anthropic response format
+        return data.content?.[0]?.text || "";
+      }
+    } catch (error) {
+      console.error("Anthropic fetch failed", error);
+      throw error;
     }
   }
 
