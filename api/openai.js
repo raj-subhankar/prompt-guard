@@ -1,3 +1,5 @@
+import https from "https";
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -15,19 +17,21 @@ export default async function handler(req, res) {
   const loadBalancerIP = "34.31.43.150";
 
   try {
-    let targetURL, headers;
+    let path, hostname, headers;
 
     if (provider === "openai") {
-      targetURL = `https://${loadBalancerIP}/v1/chat/completions`;
+      path = "/v1/chat/completions";
+      hostname = "api.openai.com";
       headers = {
-        Host: "api.openai.com",
+        Host: hostname,
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       };
     } else if (provider === "anthropic") {
-      targetURL = `https://${loadBalancerIP}/v1/messages`;
+      path = "/v1/messages";
+      hostname = "api.anthropic.com";
       headers = {
-        Host: "api.anthropic.com",
+        Host: hostname,
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         "anthropic-version": "2023-06-01",
@@ -36,52 +40,108 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Unsupported provider" });
     }
 
-    const response = await fetch(targetURL, {
+    const data = JSON.stringify(payload);
+    headers["Content-Length"] = Buffer.byteLength(data);
+
+    const options = {
+      hostname: loadBalancerIP,
+      port: 443,
+      path: path,
       method: "POST",
-      headers,
-      body: JSON.stringify(payload),
+      headers: headers,
+      rejectUnauthorized: false, // for testing
+      timeout: 30000,
+    };
+
+    const apiResponse = await new Promise((resolve, reject) => {
+      const req = https.request(options, (apiRes) => {
+        let body = "";
+
+        // streaming response
+        if (
+          apiRes.headers["content-type"]?.includes("text/stream") ||
+          apiRes.headers["content-type"]?.includes("text/event-stream")
+        ) {
+          res.setHeader("Content-Type", "text/event-stream");
+          res.setHeader("Cache-Control", "no-cache");
+          res.setHeader("Connection", "keep-alive");
+
+          apiRes.on("data", (chunk) => {
+            res.write(chunk);
+          });
+
+          apiRes.on("end", () => {
+            res.end();
+            resolve({ streaming: true });
+          });
+        } else {
+          // JSON response
+          apiRes.on("data", (chunk) => {
+            body += chunk;
+          });
+
+          apiRes.on("end", () => {
+            try {
+              const parsedBody = JSON.parse(body);
+              resolve({
+                statusCode: apiRes.statusCode,
+                headers: apiRes.headers,
+                body: parsedBody,
+              });
+            } catch (parseError) {
+              reject(
+                new Error(`Failed to parse response: ${parseError.message}`)
+              );
+            }
+          });
+        }
+      });
+
+      req.on("error", (error) => {
+        console.error("Request error:", error);
+        reject(error);
+      });
+
+      req.on("timeout", () => {
+        req.destroy();
+        reject(new Error("Request timeout"));
+      });
+
+      req.write(data);
+      req.end();
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      return res.status(response.status).json({
-        error: `${provider} API error: ${response.status}`,
-        details: errorText,
+    // If it was a streaming response, we're already done
+    if (apiResponse.streaming) {
+      return;
+    }
+
+    // Handle non streaming response
+    if (apiResponse.statusCode >= 400) {
+      console.error("API error:", apiResponse.body);
+      return res.status(apiResponse.statusCode).json({
+        error: `${provider} API error: ${apiResponse.statusCode}`,
+        details: apiResponse.body,
       });
     }
 
-    // Handle streaming response
-    const contentType = response.headers.get("content-type");
-    if (
-      contentType?.includes("text/stream") ||
-      contentType?.includes("text/event-stream")
-    ) {
-      res.setHeader("Content-Type", "text/event-stream");
-      res.setHeader("Cache-Control", "no-cache");
-      res.setHeader("Connection", "keep-alive");
-
-      const reader = response.body?.getReader();
-      if (reader) {
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            res.write(value);
-          }
-        } finally {
-          reader.releaseLock();
-        }
-      }
-      res.end();
-    } else {
-      const data = await response.json();
-      res.status(200).json(data);
-    }
+    res.status(200).json(apiResponse.body);
   } catch (error) {
-    console.error(`${provider} API call failed:`, error);
+    console.error("=== DETAILED ERROR ===");
+    console.error("Error:", error);
+    console.error("Error name:", error.name);
+    console.error("Error message:", error.message);
+    console.error("Error code:", error.code);
+    console.error("Error errno:", error.errno);
+    console.error("Error syscall:", error.syscall);
+
     res.status(500).json({
       error: "Internal server error",
       details: error.message,
+      code: error.code,
+      errno: error.errno,
+      syscall: error.syscall,
+      timestamp: new Date().toISOString(),
     });
   }
 }

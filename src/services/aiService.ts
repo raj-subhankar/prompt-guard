@@ -37,7 +37,21 @@ export class AIService {
       content: msg.content,
     }));
 
-    const url = "/api/openai";
+    const isDevelopment =
+      process.env.NODE_ENV === "development" ||
+      (typeof window !== "undefined" &&
+        window.location.hostname === "localhost");
+
+    let url;
+    if (isDevelopment) {
+      // In development, use Vercel dev server or direct API
+      // url = "http://localhost:3001/api/openai"; // If running `vercel dev`
+      // or for direct API calls
+      url = "/api/openai"; // This will hit deployed Vercel function
+    } else {
+      // prod
+      url = "/api/openai";
+    }
 
     const openAIPayload = {
       model: model.id,
