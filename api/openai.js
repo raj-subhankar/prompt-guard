@@ -26,6 +26,9 @@ export default async function handler(req, res) {
         Host: hostname,
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
+        domain: "ai-rd",
+        "module-id": "knowledge-base",
+        "app-id": "knowledge-base-chat-bot-v1",
       };
     } else if (provider === "anthropic") {
       path = "/v1/messages";
@@ -35,6 +38,9 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         "anthropic-version": "2023-06-01",
+        domain: "ai-rd",
+        "module-id": "knowledge-base",
+        "app-id": "knowledge-base-chat-bot-v1",
       };
     } else {
       return res.status(400).json({ error: "Unsupported provider" });
