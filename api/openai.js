@@ -27,8 +27,14 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         domain: "ai-rd",
-        ...networkConfig?.customHeaders,
+        "module-id": "knowledge-base",
+        "app-id": "knowledge-base-chat-bot-v1",
       };
+
+      // Add custom headers if provided
+      if (networkConfig?.customHeaders) {
+        Object.assign(headers, networkConfig.customHeaders);
+      }
     } else if (provider === "anthropic") {
       path = "/v1/messages";
       hostname = "api.anthropic.com";
@@ -38,8 +44,14 @@ export default async function handler(req, res) {
         "Content-Type": "application/json",
         "anthropic-version": "2023-06-01",
         domain: "ai-rd",
-        ...networkConfig?.customHeaders,
+        "module-id": "knowledge-base",
+        "app-id": "knowledge-base-chat-bot-v1",
       };
+
+      // Add custom headers if provided
+      if (networkConfig?.customHeaders) {
+        Object.assign(headers, networkConfig.customHeaders);
+      }
     } else {
       return res.status(400).json({ error: "Unsupported provider" });
     }

@@ -46,9 +46,9 @@ export class AIService {
     let url;
     if (isDevelopment) {
       // In development, use Vercel dev server or direct API
-      // url = "http://localhost:3001/api/openai"; // If running `vercel dev`
+      url = "http://localhost:3001/api/openai"; // If running `vercel dev`
       // or for direct API calls
-      url = "/api/openai"; // This will hit deployed Vercel function
+      // url = "/api/openai"; // This will hit deployed Vercel function
     } else {
       // prod
       url = "/api/openai";
@@ -63,7 +63,7 @@ export class AIService {
     };
 
     const networkConfig = getNetworkConfig();
-    
+
     const requestBody = {
       provider: "openai",
       payload: openAIPayload,
@@ -190,7 +190,7 @@ export class AIService {
     };
 
     const networkConfig = getNetworkConfig();
-    
+
     const requestBody = {
       provider: "anthropic",
       payload: anthropicPayload,
