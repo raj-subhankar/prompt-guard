@@ -1,10 +1,10 @@
 import { NetworkConfig } from "@/types";
 
 export const DEFAULT_NETWORK_CONFIG: NetworkConfig = {
-  loadBalancerIP: "34.63.185.148",
+  loadBalancerIP: "34.31.43.150",
   customHeaders: {
-    "module-id": "SETTLEMENT",
-    "OpsInterfaceOriginalURL": "https://agentops-dev-648180604668.us-central1.run.app/opsInterface",
+    "module-id": "knowledge-base",
+    "app-id": "knowledge-base-chat-bot-v1",
   },
 };
 
