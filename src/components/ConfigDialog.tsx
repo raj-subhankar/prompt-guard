@@ -13,15 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, Plus, Trash2, Eye, EyeOff, Key } from "lucide-react";
 import { NetworkConfig, ApiKeys } from "@/types";
-
-const DEFAULT_NETWORK_CONFIG: NetworkConfig = {
-  loadBalancerIP: "34.63.185.148",
-  customHeaders: {
-    "module-id": "SETTLEMENT",
-    OpsInterfaceOriginalURL:
-      "https://agentops-dev-648180604668.us-central1.run.app/opsInterface",
-  },
-};
+import { DEFAULT_NETWORK_CONFIG } from "@/lib/networkConfig";
 
 interface ConfigDialogProps {
   apiKeys: ApiKeys;
@@ -247,3 +239,4 @@ export function ConfigDialog({ apiKeys, onApiKeysChange }: ConfigDialogProps) {
     </Dialog>
   );
 }
+

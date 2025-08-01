@@ -1,5 +1,5 @@
 import { AIModel, ApiKeys, ChatMessage, NetworkConfig } from "@/types";
-import { getNetworkConfig } from "@/components/ConfigDialog";
+import { getNetworkConfig } from "@/lib/networkConfig";
 
 export class AIService {
   private apiKeys: ApiKeys;
