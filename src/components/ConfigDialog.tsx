@@ -221,10 +221,16 @@ export function ConfigDialog({ apiKeys, onApiKeysChange }: ConfigDialogProps) {
               </div>
             </div>
 
-            <div className="flex gap-2 pt-4 p-2">
-              <Button variant="outline" onClick={handleResetNetwork}>
-                Reset Network Defaults
-              </Button>
+            <div className="border-t pt-4 mt-6">
+              <div className="flex gap-2 justify-start">
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  onClick={handleResetNetwork}
+                >
+                  Reset Network Defaults
+                </Button>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
@@ -239,4 +245,3 @@ export function ConfigDialog({ apiKeys, onApiKeysChange }: ConfigDialogProps) {
     </Dialog>
   );
 }
-
