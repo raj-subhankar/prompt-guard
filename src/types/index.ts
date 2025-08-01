@@ -46,3 +46,8 @@ export interface PromptLibraryProps {
   isProcessing?: boolean;
   onAddPrompt?: (title: string, content: string, category: string) => void;
 }
+
+export interface NetworkConfig {
+  loadBalancerIP?: string;
+  customHeaders?: { [key: string]: string };
+}

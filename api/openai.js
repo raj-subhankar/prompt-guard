@@ -13,8 +13,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { provider, payload, apiKey } = req.body;
-  const loadBalancerIP = "34.31.43.150";
+  const { provider, payload, apiKey, networkConfig } = req.body;
+  const loadBalancerIP = networkConfig?.loadBalancerIP || "34.31.43.150";
 
   try {
     let path, hostname, headers;
@@ -27,8 +27,7 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         domain: "ai-rd",
-        "module-id": "knowledge-base",
-        "app-id": "knowledge-base-chat-bot-v1",
+        ...networkConfig?.customHeaders,
       };
     } else if (provider === "anthropic") {
       path = "/v1/messages";
@@ -39,8 +38,7 @@ export default async function handler(req, res) {
         "Content-Type": "application/json",
         "anthropic-version": "2023-06-01",
         domain: "ai-rd",
-        "module-id": "knowledge-base",
-        "app-id": "knowledge-base-chat-bot-v1",
+        ...networkConfig?.customHeaders,
       };
     } else {
       return res.status(400).json({ error: "Unsupported provider" });

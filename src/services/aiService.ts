@@ -1,4 +1,5 @@
-import { AIModel, ApiKeys, ChatMessage } from "@/types";
+import { AIModel, ApiKeys, ChatMessage, NetworkConfig } from "@/types";
+import { getNetworkConfig } from "@/components/ConfigDialog";
 
 export class AIService {
   private apiKeys: ApiKeys;
@@ -61,10 +62,13 @@ export class AIService {
       max_tokens: 2000,
     };
 
+    const networkConfig = getNetworkConfig();
+    
     const requestBody = {
       provider: "openai",
       payload: openAIPayload,
       apiKey: this.apiKeys.openai,
+      networkConfig,
     };
 
     try {
@@ -185,10 +189,13 @@ export class AIService {
       stream: !!onStream,
     };
 
+    const networkConfig = getNetworkConfig();
+    
     const requestBody = {
       provider: "anthropic",
       payload: anthropicPayload,
       apiKey: this.apiKeys.anthropic,
+      networkConfig,
     };
 
     try {

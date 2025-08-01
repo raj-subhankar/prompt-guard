@@ -1,18 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { ModelSelector } from "../ModelSelector";
-import { ApiKeyManager } from "../ApiKeyManager";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Settings, Plus, Menu, X } from "lucide-react";
+import { ConfigDialog } from "../ConfigDialog";
+import { Plus, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import tetrateIcon from "../../../public/tetrate-logo-orange.svg";
-import { useState } from "react";
 import { AIModel, ApiKeys } from "@/types";
 
 interface ChatHeaderProps {
@@ -36,8 +28,6 @@ export function ChatHeader({
   sidebarCollapsed,
   onToggleSidebar,
 }: ChatHeaderProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
   return (
     <div className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
       <div className="flex items-center justify-between p-4">
@@ -95,26 +85,9 @@ export function ChatHeader({
             />
           </div>
 
-          <ThemeToggle />
+          <ConfigDialog apiKeys={apiKeys} onApiKeysChange={onApiKeysChange} />
 
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">API Keys</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>API Configuration</DialogTitle>
-              </DialogHeader>
-              <ApiKeyManager
-                apiKeys={apiKeys}
-                onApiKeysChange={onApiKeysChange}
-                onClose={() => setIsDialogOpen(false)}
-              />
-            </DialogContent>
-          </Dialog>
+          <ThemeToggle />
         </div>
       </div>
     </div>
